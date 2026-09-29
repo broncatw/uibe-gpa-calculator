@@ -1,0 +1,13 @@
+{
+  "name": "uibe-gpa-calculator",
+  "version": "1.0.0",
+  "private": true,
+  "description": "对外经济贸易大学 GPA 绩点计算器（纯前端）",
+  "type": "module",
+  "scripts": {
+    "test": "node --test"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}

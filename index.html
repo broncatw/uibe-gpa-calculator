@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>贸大绩点计算器 · UIBE GPA Calculator</title>
+  <meta name="description" content="对外经济贸易大学 GPA 绩点计算器：内置贸大十段制/五级制换算标准，纯前端本地运行，支持成绩模拟与多算法对比。" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="wrap">
+    <header class="app-header">
+      <h1>贸大绩点计算器</h1>
+      <span class="sub">UIBE GPA Calculator · 数据只存在你的浏览器里</span>
+      <span class="spacer"></span>
+      <button class="btn" id="btn-theme" title="切换深浅色">🌓</button>
+    </header>
+
+    <section class="cards">
+      <div class="card primary">
+        <div class="label" id="gpa-label">平均积点（GPA）</div>
+        <div class="value" id="stat-gpa">0.00</div>
+      </div>
+      <div class="card">
+        <div class="label">总学分</div>
+        <div class="value" id="stat-credits">0<small>学分</small></div>
+      </div>
+      <div class="card">
+        <div class="label">加权积点总和</div>
+        <div class="value" id="stat-points">0.0</div>
+      </div>
+      <div class="card">
+        <div class="label">已录入课程</div>
+        <div class="value" id="stat-count">0<small>门</small></div>
+      </div>
+    </section>
+
+    <div class="tabs" id="algo-tabs" role="tablist">
+      <button data-algo="uibe" class="active">贸大标准 4.0（十段制）</button>
+      <button data-algo="wes">WES 参考</button>
+      <button data-algo="tsinghua5">5.0 制参考</button>
+    </div>
+
+    <section class="panel">
+      <table class="courses" id="course-table">
+        <thead>
+          <tr>
+            <th style="width:34%">课程名</th>
+            <th>学分</th>
+            <th>类型</th>
+            <th>成绩</th>
+            <th>积点</th>
+            <th style="width:40px"></th>
+          </tr>
+        </thead>
+        <tbody id="course-body"></tbody>
+      </table>
+      <div class="toolbar">
+        <button class="btn primary" id="btn-add">＋ 添加课程</button>
+        <button class="btn" id="btn-paste">📋 批量粘贴导入</button>
+        <button class="btn" id="btn-export">⬇ 导出 JSON</button>
+        <button class="btn" id="btn-import">⬆ 导入 JSON</button>
+        <button class="btn danger" id="btn-clear">清空</button>
+        <input type="file" id="file-import" accept="application/json" hidden />
+      </div>
+    </section>
+
+    <section class="panel">
+      <div class="simulator">
+        <div>
+          <div class="label hint">以当前已录课程为基础，模拟接下来的成绩对总 GPA 的影响：</div>
+        </div>
+        <div>
+          <label class="hint">目标 GPA<br /><input class="num" type="number" step="0.01" min="0" max="5" id="sim-target" value="3.7" /></label>
+        </div>
+        <div>
+          <label class="hint">拟再修学分<br /><input class="num" type="number" step="0.5" min="0" id="sim-extra" value="30" /></label>
+        </div>
+        <div class="result" id="sim-result">—</div>
+      </div>
+    </section>
+
+    <section class="panel">
+      <details class="settings">
+        <summary>⚙️ 修改换算标准（百分制十段制）</summary>
+        <p class="hint">
+          默认标准来自《对外经济贸易大学本科生学分制管理办法》。
+          如与你的成绩单/最新教务规定不一致，可直接在这里改（自动保存），或
+          <a href="https://github.com/broncatw/uibe-gpa-calculator/issues" target="_blank" rel="noopener">提 issue 告诉我们</a>。
+        </p>
+        <div class="band-grid" id="band-grid"></div>
+        <div class="toolbar">
+          <button class="btn" id="btn-bands-reset">恢复默认</button>
+        </div>
+      </details>
+    </section>
+
+    <footer>
+      <p>
+        换算依据：<a href="https://it.uibe.edu.cn/xsgz/gzzd/37673.htm" target="_blank" rel="noopener">《对外经济贸易大学本科生学分制管理办法》</a>
+        （学分积点 = 学分数 × 积点系数，平均积点 = 学分总积点 ÷ 总学分）。
+        本工具仅供参考，成绩认定与保研、出国换算请以学校官方成绩单及教务处最新规定为准。
+      </p>
+      <p>
+        开源地址：<a href="https://github.com/broncatw/uibe-gpa-calculator" target="_blank" rel="noopener">broncatw/uibe-gpa-calculator</a>
+        · 欢迎顺手点个 ⭐ · 姊妹项目：
+        <a href="https://github.com/broncatw/uibe-booker" target="_blank" rel="noopener">uibe-booker（图书馆预约助手）</a> ·
+        <a href="https://github.com/broncatw/uibe-course-planner" target="_blank" rel="noopener">uibe-course-planner（选课助手）</a>
+      </p>
+    </footer>
+  </div>
+
+  <dialog id="paste-dialog">
+    <h3>批量粘贴导入</h3>
+    <p class="hint">每行一条，用空格 / Tab / 逗号分隔：<code>课程名 学分 成绩</code>，成绩支持百分制（如 <code>92</code>）和五级制（如 <code>良好</code>）。表头行会自动跳过。</p>
+    <textarea id="paste-text" placeholder="高级会计 3 92&#10;大学英语 4 良好&#10;微观经济学 3 87"></textarea>
+    <div class="toolbar">
+      <button class="btn primary" id="btn-paste-ok">导入</button>
+      <button class="btn" id="btn-paste-cancel">取消</button>
+      <span class="hint" id="paste-feedback"></span>
+    </div>
+  </dialog>
+
+  <div class="toast" id="toast"></div>
+
+  <script type="module" src="js/app.js"></script>
+</body>
+</html>
